@@ -1,19 +1,17 @@
 name: Docker Image Sync
 
 on:
+  schedule:
+    - cron: '0 20 * * *'
   workflow_dispatch:
-    inputs:
-      image_name:
-        description: '原镜像名称 (e.g. library/nginx:latest or mysql:8.0)'
-        required: true
-      target_name:
-        description: '目标镜像名称 (可选，留空则自动保持原名)'
-        required: false
 
 jobs:
-  sync:
+  sync-images:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Login to Aliyun ACR
         uses: docker/login-action@v3
         with:
@@ -21,26 +19,37 @@ jobs:
           username: ${{ secrets.ALIYUN_USERNAME }}
           password: ${{ secrets.ALIYUN_PASSWORD }}
 
-      - name: Sync Image using Skopeo
+      - name: Batch Sync with Skopeo
         run: |
-          # 定义源镜像和目标镜像
-          SRC_IMAGE="docker.io/${{ github.event.inputs.image_name }}"
-          
-          # 处理目标名称
-          if [ -z "${{ github.event.inputs.target_name }}" ]; then
-            # 如果没指定目标名，提取原镜像的最后一段，例如 nginx:latest
-            TAG_NAME=$(echo ${{ github.event.inputs.image_name }} | awk -F/ '{print $NF}')
-            DEST_IMAGE="${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${TAG_NAME}"
-          else
-            DEST_IMAGE="${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${{ github.event.inputs.target_name }}"
+          if [ ! -f images.txt ]; then
+            echo "Error: images.txt not found!"
+            exit 1
           fi
 
-          echo "Syncing from $SRC_IMAGE to $DEST_IMAGE ..."
-          
-          # 使用 skopeo copy 进行复制
-          skopeo copy --all \
-            docker://$SRC_IMAGE \
-            docker://$DEST_IMAGE
-          
-          echo "Done! You can pull it via:"
-          echo "docker pull $DEST_IMAGE"
+          while IFS= read -r line || [[ -n "$line" ]]; do
+            [[ -z "$line" || "$line" =~ ^# ]] && continue
+
+            RAW_IMAGE=$(echo $line | xargs)
+
+            if [[ $RAW_IMAGE != *"/"* ]] || [[ $RAW_IMAGE != *"."* ]]; then
+              SRC_IMAGE="docker.io/library/$RAW_IMAGE"
+            elif [[ $RAW_IMAGE != *"."* ]]; then
+              SRC_IMAGE="docker.io/$RAW_IMAGE"
+            else
+              SRC_IMAGE="$RAW_IMAGE"
+            fi
+
+            IMAGE_TAG=$(echo $RAW_IMAGE | awk -F/ '{print $NF}')
+            DEST_IMAGE="${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/${IMAGE_TAG}"
+
+            echo "----------------------------------------"
+            echo "Processing: $SRC_IMAGE"
+            echo "Target:     $DEST_IMAGE"
+
+            if skopeo copy --all --quiet docker://$SRC_IMAGE docker://$DEST_IMAGE; then
+              echo "✅ Success: $IMAGE_TAG"
+            else
+              echo "❌ Failed: $IMAGE_TAG"
+            fi
+
+          done < images.txt
