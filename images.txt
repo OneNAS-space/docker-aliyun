@@ -9,3 +9,4 @@ mongo:8.0.15
 beatkind/watchtower:latest
 easychen/cookiecloud:latest
 jackie264/feeds-lister:latest
+magiccoders/nginxpulse:latest
