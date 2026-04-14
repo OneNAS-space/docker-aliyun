@@ -10,3 +10,4 @@ beatkind/watchtower:latest
 easychen/cookiecloud:latest
 jackie264/feeds-lister:latest
 magiccoders/nginxpulse:latest
+dockurr/windows:latest
