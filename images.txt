@@ -11,3 +11,5 @@ easychen/cookiecloud:latest
 jackie264/feeds-lister:latest
 magiccoders/nginxpulse:latest
 dockurr/windows:latest
+netbirdio/dashboard:latest
+netbirdio/netbird-server:latest
