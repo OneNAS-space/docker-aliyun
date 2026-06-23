@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@main
 
       - name: Login to Aliyun
-        uses: docker/login-action@main
+        uses: docker/login-action@latest
         with:
           registry: ${{ secrets.ALIYUN_REGISTRY }}
           username: ${{ secrets.ALIYUN_USERNAME }}
