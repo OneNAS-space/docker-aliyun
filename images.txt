@@ -13,3 +13,5 @@ magiccoders/nginxpulse:latest
 dockurr/windows:latest
 netbirdio/dashboard:latest
 netbirdio/netbird-server:latest
+henrygd/beszel:latest
+henrygd/beszel-agent:latest
