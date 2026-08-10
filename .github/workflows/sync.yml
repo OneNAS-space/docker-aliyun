@@ -10,6 +10,9 @@ on:
     paths:
       - "images.txt"
 
+permissions:
+  contents: read
+
 jobs:
   check-and-sync:
     runs-on: ubuntu-latest
