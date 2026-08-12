@@ -57,7 +57,7 @@ jobs:
               echo "✅ No change detected for $IMAGE_TAG. Skipping sync."
             else
               echo "🚀 Change detected or Image missing. Syncing $IMAGE_TAG..."
-              skopeo copy --all --quiet $SRC_IMAGE $DEST_IMAGE
+              skopeo copy --quiet $SRC_IMAGE $DEST_IMAGE
               echo "Successfully updated $IMAGE_TAG"
             fi
 
