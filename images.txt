@@ -17,3 +17,4 @@ henrygd/beszel:latest
 henrygd/beszel-agent:latest
 henrygd/beszel-agent-intel:latest
 postgres:latest
+postgres:18-alpine
