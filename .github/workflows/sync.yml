@@ -33,7 +33,6 @@ jobs:
             [[ -z "$line" || "$line" =~ ^# ]] && continue
             RAW_IMAGE=$(echo $line | xargs)
 
-            # 补全源地址
             if [[ $RAW_IMAGE != *"/"* ]]; then
               SRC_IMAGE="docker://docker.io/library/$RAW_IMAGE"
             elif [[ $RAW_IMAGE != *"."* ]]; then
@@ -42,14 +41,12 @@ jobs:
               SRC_IMAGE="docker://$RAW_IMAGE"
             fi
 
-            # 提取 Tag 生成目标地址
             IMAGE_TAG=$(echo $RAW_IMAGE | awk -F/ '{print $NF}')
             DEST_IMAGE="docker://${{ secrets.ALIYUN_REGISTRY }}/${{ secrets.ALIYUN_NAMESPACE }}/$IMAGE_TAG"
 
             echo "----------------------------------------"
             echo "Checking: $RAW_IMAGE"
 
-            # 获取源和目标的 Digest 指纹进行对比
             SRC_DIGEST=$(skopeo inspect --format '{{.Digest}}' $SRC_IMAGE || echo "error_src")
             DEST_DIGEST=$(skopeo inspect --format '{{.Digest}}' $DEST_IMAGE || echo "not_exists")
 
